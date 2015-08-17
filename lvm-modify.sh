@@ -29,7 +29,12 @@ printwarning () {
 }
 
 raise_error () {
-  printf "${WARN}The last command exited non-zero. Please find out what happened and try again.\n${NOCOLOR}" 
+  # if [ `echo ${#1}` -gt 0 ]
+  if [ -n $1 ] 
+    then printf "${WARN}$1${NOCOLOR}"
+  else
+    printf "${WARN}The last command exited non-zero. Please find out what happened and try again.\n${NOCOLOR}" 
+  fi
   printf "${WARN}Press [ENTER] to continue anyway or [ctrl-c] to quit and fix the problem.\n${NOCOLOR}"
   read junk
 }
@@ -55,7 +60,7 @@ lv_extend () {
   printinfo "Listing partitions. This will fail if you didn't run the script sudo.\n"
   fdisk -l 2>/dev/null | cut -d: -f1 | grep "/dev/sd\w"
   detect_error
-  read -p "`printf "${ALERT}"`Type the device string exactly (in the form of -> /dev/sdb): `printf "${NOCOLOR}"`" devstring
+  read -p "`printf "${ALERT}"`Type the device string exactly (in the form of -> /dev/sdX): `printf "${NOCOLOR}"`" devstring
   printinfo "The device to be added is: ${USERINPUT}$devstring\n"
   cont_prompt
   clear
@@ -83,7 +88,17 @@ lv_extend () {
   clear
 
   # add the new physical volume to the volume group
-  printwarning "This script naively assumes the first partition of the new device should be added to the volume group. If this does not fit your situation hit [ctrl-c] now.\n"
+  read -p "`printf "${ALERT}"`If you want to use a partition other than the first on $devstring, type the number here ([ENTER] to accept default of 1): `printf "${NOCOLOR}"`" partnumber
+  # if [[ $partnumber =~ [[:digit:]] ]]
+  if [ -z $partnumber ]
+    then printinfo "You have accepted the default of ${USERINPUT}$pvname.\n"
+  elif  [ "$partnumber" -gt "0" ]
+    then pvname="$devstring""$partnumber"
+    printinfo "You have set the partition to be added to ${USERINPUT}$pvname.\n"
+    cont_prompt
+  else
+    raise_error "You appear to have entered something other than a digit. Erroring out.\n"
+  fi
   printinfo "Adding $pvname to $vgname.\n"
   vgextend $vgname $pvname
   detect_error
