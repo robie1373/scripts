@@ -6,9 +6,6 @@
 # 
 ##################
 
-# device string of disk to add to LVM
-#devstring="/dev/sdb"
-
 ######### Colors ############
 INFO='\033[1;32m'
 ALERT='\033[1;33m'
@@ -16,7 +13,7 @@ WARN='\033[1;31m'
 USERINPUT='\033[1;35m'
 NOCOLOR='\033[0m'
 ##########################
-##### utility fuNOCOLORtions ###########
+##### utility functions ###########
 cont_prompt () {
   printf "${ALERT}Press [ENTER] to continue, [ctrl-c] to quit.${NOCOLOR}"
   read junk
